@@ -2,6 +2,7 @@
 A simple moon plugin to warn about upcoming moon conjunctions and let you know the current state of the moon phases
 
 Commands:
+
     moons  - shows the current state of the moons.
     moons help - shows the help screen
     moonticks - enable/disable showing the moons every tick
