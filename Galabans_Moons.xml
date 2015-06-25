@@ -36,134 +36,90 @@ moonlevel - sets how much output to show
 <include name="constants.lua"/>
 
 
+<!--  TODO:
+
+* Smaller moons
+* Moons fly across the pane.  (White flys right-to-left or vice versa)
+
+
+* Do these:
+ bring to front
+         CallPlugin("462b665ecb569efbf261422f","boostMe", win)
+ send to back
+         CallPlugin("462b665ecb569efbf261422f","dropMe", win)        
+
+-->
+
 <!--  Triggers  -->
 
 <triggers>
   <trigger
-   custom_colour="15"
    enabled="y"
-   match="You notice the white moon falling to the west."
-   name="trgWeather2"
+   match="^You see the white moon rising in the west\.$"
+   regexp="y"
+   name="trgMoons1"
    send_to="12"
    sequence="100"
   >
-  <send></send>
+  <send>moonRise("White")</send>
   </trigger>
-  <trigger
-   enabled="y"
-   match="You see the grey moon rising in the east."
-   name="trgWeather3"
-   send_to="12"
-   sequence="100"
-  >
-  <send>
-local vly = tonumber(GetVariable("vMoonTimerGrey"))
-local lvl = tonumber(GetVariable("vMoonOutputLevel"))
-if (vly ~= nil and lvl ~= nil and lvl == 4) then
-    Note("Grey Moon Rising.  Resetting Current Value: "..vly.." to zero")
-end
-SetVariable("vMoonTimerGrey",0)</send>
-  </trigger>
-  <trigger
-   enabled="y"
-   match="You see the black moon rising in the east."
-   name="trgWeather4"
-   send_to="12"
-   sequence="100"
-  >
-  <send>
-local vly = tonumber(GetVariable("vMoonTimerBlack"))
-local lvl = tonumber(GetVariable("vMoonOutputLevel"))
-if (vly ~= nil and lvl ~= nil and lvl == 4) then
-   Note("Black Moon Rising.  Resetting Current Value: "..vly.." to zero")
-end
-SetVariable("vMoonTimerBlack",0)</send>
-  </trigger>
-  <trigger
-   enabled="y"
-   keep_evaluating="y"
-   match="--&gt; TICK &lt;--"
-   name="trgWeather5"
-   send_to="12"
-   sequence="100"
-  >
-  <send>
-local vlu = tonumber(GetVariable("vMoonTimerGrey"))
-if (vlu ~= nil) then
-    SetVariable("vMoonTimerGrey", vlu + 1)
-end
 
-vlu = tonumber(GetVariable("vMoonTimerWhite"))
-if (vlu ~= nil) then
-    SetVariable("vMoonTimerWhite", vlu + 1)
-end
+  <trigger
+   enabled="y"
+   match="^You see the grey moon rising in the east\.$"
+   regexp="y"
+   name="trgMoons2"
+   send_to="12"
+   sequence="100"
+  >
+  <send>moonRise("Grey")</send>
+  </trigger>
 
-vlu = tonumber(GetVariable("vMoonTimerBlack"))
-if (vlu ~= nil) then
-    SetVariable("vMoonTimerBlack", vlu + 1)
-end
 
-moonTimerCheck(nil, nil, nil)
+  <trigger
+   enabled="y"
+   match="^You see the black moon rising in the east\.$"
+   regexp="y"
+   name="trgMoons3"
+   send_to="12"
+   sequence="100"
+  >
+  <send>moonRise("Black")</send>
+  </trigger>
 
-vlu = tonumber(GetVariable("vMoonTicks"))
-if (vlu ~= nil and vlu == 1) then
-    Execute("moons")
-end
-</send>
-  </trigger>
   <trigger
    enabled="y"
-   match="You notice the black moon falling to the west."
-   name="trgWeather6"
+   match="^You notice the black moon falling to the west\.$"
+   regexp="y"
+   name="trgMoons4"
    send_to="12"
    sequence="100"
   >
-  <send>SetVariable("vMoonTimerBlack","12")</send>
+  <send>moonFall("Black", "13")</send>
   </trigger>
+
   <trigger
    enabled="y"
-   match="You notice the white moon falling to the east."
-   name="trgWeather7"
+   match="^You notice the white moon falling to the east\.$"
+   regexp="y"
+   name="trgMoons5"
    send_to="12"
    sequence="100"
   >
-  <send>SetVariable("vMoonTimerWhite","16")</send>
+  <send>moonFall("White", "17")</send>
   </trigger>
+
   <trigger
    enabled="y"
-   match="You notice the grey moon falling to the west."
-   name="trgWeather8"
+   match="^You notice the grey moon falling to the west\.$"
+   regexp="y"
+   name="trgMoons6"
    send_to="12"
    sequence="100"
   >
-  <send>SetVariable("vMoonTimerGrey","7")</send>
+  <send>moonFall("Grey", "8")</send>
   </trigger>
-  <trigger
-   enabled="y"
-   match="Welcome to Aardwolf. May your adventures be mystical, challenging and rewarding."
-   name="trgCONNECT"
-   send_to="12"
-   sequence="100"
-  >
-  <send>SetVariable("vMoonTimerGrey","")
-SetVariable("vMoonTimerWhite","")
-SetVariable("vMoonTimerBlack","")</send>
-  </trigger>
-  <trigger
-   enabled="y"
-   match="You see the white moon rising in the west."
-   name="trgWeather"
-   send_to="12"
-   sequence="100"
-  >
-  <send>local vly = tonumber(GetVariable("vMoonTimerWhite"))
-local lvl = tonumber(GetVariable("vMoonOutputLevel"))
-if (vly ~= nil and lvl ~= nil and lvl == 4) then
-   Note("White Moon Rising.  Resetting Current Value: "..vly.." to zero")
-end
-SetVariable("vMoonTimerWhite",0)
-</send>
-  </trigger>
+
 </triggers>
 
 <!--  Aliases  -->
@@ -178,10 +134,10 @@ SetVariable("vMoonTimerWhite",0)
   <send>local vlu = tonumber(GetVariable("vMoonTicks"))
 if(vlu == nil or vlu == 0) then
    vlu = 1
-   Note("Moonticks set to ON")
+   OutputNote("Moonticks set to ON")
 else
    vlu = 0
-   Note("Moonticks set to OFF")
+   OutputNote("Moonticks set to OFF")
 end
 
 SetVariable("vMoonTicks", vlu)
@@ -232,13 +188,12 @@ SetVariable("vMoonTicks", vlu)
   >
   <send>
 	setAlertLevel("%1")
-
-</send>
+  </send>
   </alias>
 
   <alias
    script="threeMoons"
-   match="^(moon|moons)$"
+   match="^(moon|moons|3moons)$"
    enabled="y"
    regexp="y"
    sequence="100"
@@ -246,8 +201,8 @@ SetVariable("vMoonTicks", vlu)
   </alias>
 
   <alias
-   script="help_threeMoons"
-   match="^(moon help|moons help)$"
+   script="threeMoons_switch"
+   match="^(moon|moons|3moons) (.*?)$"
    enabled="y"
    regexp="y"
    sequence="100"
@@ -258,22 +213,153 @@ SetVariable("vMoonTicks", vlu)
 
 <!--  Variables  -->
 
-<variables>
-  <variable name="vMoonTicks">0</variable>
-  <variable name="vMoonOutputLevel">3</variable>
-  <variable name="vMoonAlerts">1</variable>
-  <variable name="vMoonTimerBlack"></variable>
-  <variable name="vMoonTimerGrey"></variable>
-  <variable name="vMoonTimerWhite"></variable>
-</variables>
-
 <!--  Script  -->
 
 
 <script>
 <![CDATA[
 
+require "movewindow"
 
+------------------------
+--  Begin MiniWindow junk
+
+font_height = 0
+
+default_height = 160
+default_width = 200
+
+
+top = 0
+left = 0
+height = tonumber (GetVariable ("height")) or default_height
+width = tonumber (GetVariable ("width")) or default_width
+  --hidden = tonumber (GetVariable ("hidden")) or 0
+hidden = 0
+
+-- Semi-Constants
+win = "galaban_moons_"..GetPluginID()
+default_font_size = 8
+default_font_name = "Dina"
+
+-- Constants
+default_x = 868
+default_y = 120
+
+LONGEST_LINE = "2-moons:  W/b: in 100t (for 18t)"
+
+FONT_ID = "font"
+RESIZE_TAG_SIZE = 10
+MIN_SIZE        = 100
+background_colour = 0x000000
+title_gradient_1 = 0x333333
+title_gradient_2 = 0x555555
+
+ICON_SIZE = 32
+FONT_COLOUR = 0xffffff
+TITLE_HEIGHT = 25
+MARGIN = 6
+MARGIN_TOP = TITLE_HEIGHT + MARGIN
+
+MOON_SIZE = 30
+TEXT_OFFSET = 40
+
+WINDOW_POSITION = 6
+BORDER_COLOR = 0xadadad
+EDGE_WIDTH = 2
+
+-- Temporaries
+startx      = ""  
+starty      = ""
+posx        = "" 
+posy        = ""
+
+-- End MiniWindow Junk
+------------------------
+
+------------------------
+-- Globals
+
+black = {curr= nil,start= -1,duration= -1,complete= 0,conj=""}
+white = {curr= nil,start= -1,duration= -1,complete= 0,conj=""}
+grey  = {curr= nil,start= -1,duration= -1,complete= 0,conj=""}
+three = {curr= nil,start= -1,duration= -1,complete= 0,conj=""}
+
+
+
+
+-- Constants
+-- This is for the drawing
+-- (Note: hex is RGB backwards due to the way mushclient loads the values (using 'long' rathter than uchar[])
+-- some constants... 
+-- (Note: hex is RGB backwards due to the way mushclient loads the values (using 'long' rathter than uchar[])
+H_WHITE = 0xffffff
+H_GREEN = 0x00ff00
+H_YELLOW = 0x00ffff
+H_RED = 0x0000ff
+H_GREY = 0x808080
+H_DARK_BLUE = 0x800000
+H_BLUE = 0xff0000
+H_DCYAN = 0x808000
+H_CYAN = 0xFFFF00
+
+-- 1: bold  22: cancel bold
+-- 31:red	32: Green 	33: Yellow 	34: Blue 	35: Magenta		36: Cyan 	37: White 
+c_white = ANSI(1)..ANSI(37)
+c_grey = ANSI(22)..ANSI(37)
+c_cyan = ANSI(1)..ANSI(36)
+c_dcyan = ANSI(22)..ANSI(36)
+c_blue = ANSI(22)..ANSI(34)
+c_red = ANSI(1)..ANSI(31)
+c_yellow = ANSI(1)..ANSI(33)
+c_green = ANSI(1)..ANSI(32)
+
+MOON_COLOR_DOWN = 0x202020  --(border only)
+MOON_COLOR_WHITE = 0xffffff 
+MOON_COLOR_BLACK = H_DARK_BLUE
+MOON_COLOR_GREY = H_GREY
+
+
+----------------------
+-- GMCP 
+function OnPluginBroadcast (msg, id, name, text)
+   if id == "3e7dedbe37e44942dd46d264" then -- gmcphandler
+      if (text == "comm.tick") then
+         gmcp_tick()
+      end 
+   elseif (id == "462b665ecb569efbf261422f" and msg==996 and text == "re-register z") then
+      CallPlugin("462b665ecb569efbf261422f", "registerMiniwindow", win)
+   end --if gmcphandler
+end
+
+function OnPluginConnect()
+    -- Override these.  We don't really know their state
+    SetVariable("vMoonTimerGrey","")
+    SetVariable("vMoonTimerWhite","")
+    SetVariable("vMoonTimerBlack","")
+
+    -- Leave the original values, if they exist, populating only with the defaults.
+    DefaultVariable("vMoonTicks", "0")
+    DefaultVariable("vMoonOutputLevel", "3")
+    DefaultVariable("vMoonAlerts", "1")
+
+end
+
+function DefaultVariable(varname, defaultval)
+    local val = tonumber(GetVariable(varname))
+    if (val == nil) then
+        SetVariable(varname,defaultval)
+    end
+
+end
+
+function gmcp_tick()
+    processTick()
+end
+
+
+----------------------
+--  Help
 function help_moonlevel()
 
     local curr = tonumber(GetVariable("vMoonOutputLevel"))
@@ -304,7 +390,6 @@ Current Setting: ]]..curr.. [[
 
 end
 
-
 function help_moonalerts()
 
     local curr = tonumber(GetVariable("vMoonAlerts"))
@@ -319,14 +404,18 @@ function help_moonalerts()
 Moon Alerts
 
 This sets the amount of information that is displayed when a 3-moon or 2-moon 
-conjunction is about to occur or is ocurring.  The alert is sent at each tick.
+conjunction is about to occur or is ocurring.  The alert is sent at each tick
+when a conjunction is approaching or occuring.
+
+Note: Only 2-moon conjunctions for the white moon are alerted (white-grey or
+white-black).  The black-grey conjunction is not alerted.
 
 syntax:  moonalerts <level>
 
 Levels:
 0 - do not show any moon alerts
 1 - show alerts for 3-moon conjunctions
-2 - show alerst for 3-moon and 2-moon conjunctions
+2 - show alerts for 3-moon and 2-moon conjunctions
 
 Current Setting:  ]]..curr..[[
 
@@ -342,31 +431,36 @@ function help_threeMoons()
 
 This is Galaban's simple moon monitoring plugin.  The commands are:
 
-moons       - shows the current state of the moons.
+moons           - shows the current state of the moons.
+moons <channel> - Echos the next three moon conjunction on a channel
 
-moons help  - shows this screen
-moonticks   - enable/disable showing the moons every tick
-moonalerts  - enable/disable the alerts regarding conjunctions
-moonlevel   - sets how much output to show
+moons miniwin   - show/hide the moon miniwindow
+moons help      - shows this screen
+moonticks       - enable/disable showing the moons every tick
+moonalerts      - enable/disable the alerts regarding conjunctions
+moonlevel       - sets how much output to show
+
+NOte: You can also use "3moons" or "moon" for the channels/help
     ]]
 
     print(moonalertshelp)
 
 	local c_white = ANSI(1)..ANSI(37)
 	local c_red = ANSI(1)..ANSI(31)
-    AnsiNote(c_red.."NOTE: You must have "..c_white.."autotick"..c_red.." enabled for this plugin to work.\n")
     print("To gather the moon data, you must be outdoors to see the moons rise and fall.\n\n")
 
 end
 
 
+------------------
+-- Settings
 function setMoonLevel(input)
 	local inVal = tonumber(input)
 
     if (inVal == nil or inVal < 0 or inVal > 4) then
         help_moonlevel()
 	else
-        Note("Output level set to ".. inVal)    
+        OutputNote("Output level set to ".. inVal)    
     	SetVariable("vMoonOutputLevel", inVal)
     end
 end
@@ -379,11 +473,11 @@ function setAlertLevel(input)
     end
 
     if (inVal == 0) then
-        Note("Moon alerts removed.")
+        OutputNote("Moon alerts removed.")
     elseif (inVal == 1) then
-        Note("Moon alerts set to 1.  (3-moons only)")
+        OutputNote("Moon alerts set to 1.  (3-moons only)")
     else
-        Note("Moon alerts set to 2.  (2 and 3-moon conjunctions)")
+        OutputNote("Moon alerts set to 2.  (2 and 3-moon conjunctions)")
         inVal = 2
     end
 
@@ -392,36 +486,146 @@ function setAlertLevel(input)
 end
 
 
+
+-------------------
+--  Mud Event handling (ticks/moon rises)
+function moonRise(moonName)
+
+    DebugNote("---------------") 
+
+    local moonvar = "vMoonTimer"..moonName
+    local vly = tonumber(GetVariable(moonvar))
+    local lvl = tonumber(GetVariable("vMoonOutputLevel"))
+
+    if (vly ~= nil and lvl ~= nil and lvl == 4) then
+        DebugNote(moonName.." Moon Rising.  Resetting Current Value: "..vly.." to one")
+    elseif (lvl == 4) then
+        DebugNote(moonName.." Moon Rising. Setting Value to one")
+    end
+    SetVariable(moonvar,1)
+
+    if (vly == nil) then
+        DebugNote("Forcing redraw..")
+        DrawMoonWindow()
+    end
+end
+
+function moonFall(moon, newVal)
+
+    DebugNote("---------------") 
+
+    local varid = "vMoonTimer" .. moon
+    local vlu = tonumber(GetVariable(varid))
+
+    SetVariable(varid, newVal)
+
+    if (vlu == nil) then
+        DebugNote("Forcing redraw..")
+        DrawMoonWindow()
+    end
+end
+
+
+function processTick()
+    local vlu = tonumber(GetVariable("vMoonTimerGrey"))
+    if (vlu ~= nil) then
+        SetVariable("vMoonTimerGrey", vlu + 1)
+    end
+    
+    vlu = tonumber(GetVariable("vMoonTimerWhite"))
+    if (vlu ~= nil) then
+        SetVariable("vMoonTimerWhite", vlu + 1)
+    end
+    
+    vlu = tonumber(GetVariable("vMoonTimerBlack"))
+    if (vlu ~= nil) then
+        SetVariable("vMoonTimerBlack", vlu + 1)
+    end
+    
+    moonTimerCheck()
+    
+    vlu = tonumber(GetVariable("vMoonTicks"))
+    if (vlu ~= nil and vlu == 1) then
+        DoAfterSpecial(0.1, "threeMoons()", 12)
+    end
+    -- Also, re-draw the moon window now that we have new data
+    DrawMoonWindow()
+end
+
+
+--------------------
+--  Channels
+
+function threeMoons_switch(rName, rLine, rWildcards)
+
+    local cmd = rWildcards[2]
+    if (cmd == "help") then
+        help_threeMoons()
+        return
+    end
+
+    if (cmd == "miniwin") then
+        if (hidden == 0) then
+            closeMiniwin()
+        else
+            openMiniwin()
+        end
+        return
+    end
+
+    if (white.curr == nil or black.curr == nil or grey.curr == nil or three.start == -1) then
+        AnsiNote(c_cyan.."Need more moon data.  Wait outside to watch for the moons rising and falling."..c_grey)
+        return
+    end
+
+    local outString = ""
+
+    if (three.start == 0) then
+        outString = outString.."The next 3-moon conjunction is right now (for "..three.duration.." more ticks). "
+    else
+        outString = outString.."The next 3-moon conjunction is in "..three.start.." ticks (for "..three.duration.." ticks). "
+    end
+
+    if (black.start < white.start) then
+        if (black.start == 0) then
+            outString = outString.. "The next 2-moons (Black/"..spelloutConj(black.conj)..") is now! (for "..black.duration.." ticks)."
+        else
+            outString = outString.. "The next 2-moons (Black/"..spelloutConj(black.conj)..") in "..black.start.." ticks (for "..black.duration.." ticks)."
+        end
+    else
+        if (white.start == 0) then
+            outString = outString.. "The next 2-moons (White/"..spelloutConj(white.conj)..") is now! (for "..white.duration.." ticks)."
+        else
+            outString = outString.. "The next 2-moons (White/"..spelloutConj(white.conj)..") in "..white.start.." ticks (for "..white.duration.." ticks)."
+        end
+    end
+
+    Execute(cmd.." "..outString)
+end
+
+function spelloutConj(rawConjunction)
+    if (string.starts(rawConjunction,"w")) then
+        return "White"
+    elseif (string.starts(rawConjunction,"b")) then
+        return "Black"
+    else    --grey
+        return "Grey"
+    end
+end
+
+--------------------
+--  Actual Processing
+
+-- The "moons" command...
 function threeMoons(rName, rLine, rWildcards)
 
-	local black = {curr= -1,start= -1,duration= -1,complete= 0,conj=""}
-	local white = {curr= -1,start= -1,duration= -1,complete= 0,conj=""}
-	local grey  = {curr= -1,start= -1,duration= -1,complete= 0,conj=""}
-	local three = {curr= -1,start= -1,duration= -1,complete= 0,conj=""}
-
-	-- 1: bold  22: cancel bold
-	-- 31:red	32: Green 	33: Yellow 	34: Blue 	35: Magenta		36: Cyan 	37: White 
-
-	--AnsiNote ("This is normal ", ANSI(1), ANSI (33), "and this is yellow on white")
 
 	--Local output variables
-	local c_white = ANSI(1)..ANSI(37)
-	local c_grey = ANSI(22)..ANSI(37)
-	local c_cyan = ANSI(1)..ANSI(36)
-	local c_dcyan = ANSI(22)..ANSI(36)
-	local c_blue = ANSI(22)..ANSI(34)
-	local c_red = ANSI(1)..ANSI(31)
-	local c_yellow = ANSI(1)..ANSI(33)
-	local c_green = ANSI(1)..ANSI(32)
-
 	local debugOutput = ""
 	local nextmoons = ""
 	local nextcalc = 0
 
 	--	Load up the Global Variables
-	grey.curr =  tonumber(GetVariable("vMoonTimerGrey"))
-	black.curr = tonumber(GetVariable("vMoonTimerBlack"))
-	white.curr = tonumber(GetVariable("vMoonTimerWhite"))
 	local outputlevel = tonumber(GetVariable("vMoonOutputLevel"))
 
 	if (outputlevel == nil or outputlevel < 1 or outputlevel > 4) then
@@ -430,7 +634,9 @@ function threeMoons(rName, rLine, rWildcards)
 	end
 
 	if (white.curr == nil) then
-		Note("White moon is in an unknown state")
+        if (outputlevel == 4) then
+            OutputNote("White moon is in an unknown state")
+        end
 	else
 		debugOutput = debugOutput..c_white.."White:   "..c_grey..white.curr.."              "
 		if (white.curr > 17) then
@@ -442,7 +648,9 @@ function threeMoons(rName, rLine, rWildcards)
 		end
 	end	
 	if (black.curr == nil) then
-		Note("Black moon is in an unknown state")
+        if (outputlevel == 4) then
+            OutputNote("Black moon is in an unknown state")
+        end
 	else
 		debugOutput = debugOutput..c_blue.."Black:   "..c_grey..black.curr.."            "
 		if (black.curr > 13) then
@@ -454,7 +662,9 @@ function threeMoons(rName, rLine, rWildcards)
 		end
 	end
 	if (grey.curr == nil) then
-		Note("Grey moon is in an unknown state")
+        if (outputlevel == 4) then
+            OutputNote("Grey moon is in an unknown state")
+        end
 	else
 		debugOutput = debugOutput..c_dcyan.."Grey:   "..c_grey..grey.curr.."     "
 		if (grey.curr > 8) then
@@ -466,51 +676,46 @@ function threeMoons(rName, rLine, rWildcards)
 		end
 	end
 
-	if (outputlevel == 4) then
+	if (outputlevel == 4 and debugOutput ~= "") then
 		AnsiNote(debugOutput)
 	end
-	if (outputlevel >= 3) then
+	if (outputlevel >= 3 and nextmoons ~= "") then
 		AnsiNote(nextmoons)
 	end 
+
+
+    --  Waiting for moons... Just return
 	if (grey.curr == nil or black.curr == nil or white.curr == nil) then
 		AnsiNote(c_cyan.."Not all timers are set. Wait for more moons.")
 		return
 	end
 
 
-
-	--	Note: Because these are table structures, they pass by reference.
-	--	---------------------------------------
-	moonCalc(black,white,grey,three);
-	--	---------------------------------------
-
-
-
 	local conjnote = c_cyan.."2-moons: "
 	local sevcol = ""
 	local show2moons = 0
-
+    
 	if (white.start == 0) then
-		conjnote = conjnote..c_white.."White/"..white.conj..":"..c_green.." Now "..c_grey.."("..white.duration.." ticks left)   "
+		conjnote = conjnote..c_white.."White/"..ansiConj(white.conj)..":"..c_green.." Now "..c_grey.."("..white.duration.." ticks left)   "
 	else
 		sevcol = c_grey
 		if (white.start < 6) then
 			sevcol = c_yellow
 			show2moons = 1
 		end
-		conjnote = conjnote..c_white.."White/"..white.conj..":"..sevcol.."[in "..white.start.." ticks]"..c_grey.." (for "..white.duration.." ticks)   "
+		conjnote = conjnote..c_white.."White/"..ansiConj(white.conj)..":"..sevcol.."[in "..white.start.." ticks]"..c_grey.." (for "..white.duration.." ticks)   "
 	end
 
 	if (white.start ~= black.start) then
 		if (black.start == 0) then
-			conjnote = conjnote..c_blue.."Black/"..black.conj..":"..c_green.." Now "..c_grey.."("..black.duration.." ticks left)   "
+			conjnote = conjnote..c_blue.."Black/"..ansiConj(black.conj)..":"..c_green.." Now "..c_grey.."("..black.duration.." ticks left)   "
 		else
 			sevcol = c_grey
 			if (black.start < 6) then
 				sevcol = c_yellow
 				show2moons = 1
 			end
-			conjnote = conjnote..c_blue.."Black/"..black.conj..":"..sevcol.."[in "..black.start.." ticks]"..c_grey.." (for "..black.duration.." ticks)   "
+			conjnote = conjnote..c_blue.."Black/"..ansiConj(black.conj)..":"..sevcol.."[in "..black.start.." ticks]"..c_grey.." (for "..black.duration.." ticks)   "
 		end
 	end
 
@@ -538,59 +743,79 @@ function threeMoons(rName, rLine, rWildcards)
 
 	AnsiNote(conjnote)
 
+end
 
-
+function ansiConj(rawConjunction)
+    if (string.starts(rawConjunction,"w")) then
+        return c_white..rawConjunction..c_grey
+    elseif (string.starts(rawConjunction,"b")) then
+        return c_blue..rawConjunction..c_grey
+    else    --grey
+        return c_dcyan..rawConjunction..c_grey
+    end
 end
 
 
-
-
-function moonCalc(black, white, grey, three)
+--  The actual calculation of the moons
+function moonCalc()
 
 
 	--	DATA	SHINING		NOT SHINING
 	--	Grey	1-8			9-30
 	--  White   1-17		18-65
 	--  Black   1-13	  	14-50
-	local c_white = ANSI(1)..ANSI(37)
-	local c_grey = ANSI(22)..ANSI(37)
-	local c_blue = ANSI(22)..ANSI(34)
-	local c_dcyan = ANSI(22)..ANSI(36)
-
-	local txW = c_white.."w"..c_grey
-	local txB = c_blue.."b"..c_grey
-	local txG = c_dcyan.."g"..c_grey
+	local txW = "w"
+	local txB = "b"
+	local txG = "g"
 
 	local tickCount = 0
 
 	local shining = 0
 
+    --Reset these values so that they will recalculate
+    black.start = -1
 	black.complete = 0
+    black.duration = -1
+    black.conj = ""
+    white.start = -1
 	white.complete = 0
+    white.duration = -1
+    white.conj = ""
+    three.start = -1
 	three.complete = 0
+    three.duration = -1
+
+    -- Ok, this is sloppy, but we use the globals for all the start/complete/duration stuff
+    -- These variables below are the "local" ones, only for the .curr value.
+    -- It's sloppy because I made them structs instead of independent variables so I could use ".curr"
+    local lblack = {curr = black.curr}
+    local lwhite = {curr = white.curr}
+    local lgrey  = {curr = grey.curr}
+    local lthree = {curr = three.curr}
+
 
 	-- 500 limit is a sanity check to prevent endless loops.
 	while ((three.complete == 0 or black.complete == 0 or white.complete == 0) and tickCount < 500) do
 		-- 
 		---- Check to see if it's shining
 		shining = 0
-		if (grey.curr < 9) then
+		if (lgrey.curr < 9) then
 			shining = shining + 1
 		end
-		if (black.curr < 14) then
+		if (lblack.curr < 14) then
 			shining = shining + 1
 		end
-		if (white.curr < 18) then
+		if (lwhite.curr < 18) then
 			shining = shining + 1
 		end
 		--	Look for conjunctions
-		if (black.curr < 14 and shining >= 2) then
+		if (lblack.curr < 14 and shining >= 2) then
 			if (black.start == -1) then
 				black.start = tickCount
-				if (white.curr < 18) then
+				if (lwhite.curr < 18) then
 					black.conj = txW
 				end
-				if (grey.curr < 9) then
+				if (lgrey.curr < 9) then
 					black.conj = txG
 				end
 			end
@@ -601,13 +826,13 @@ function moonCalc(black, white, grey, three)
 			end
 		end
 
-		if (white.curr < 18 and shining >= 2) then
+		if (lwhite.curr < 18 and shining >= 2) then
 			if (white.start == -1) then
 				white.start = tickCount
-				if (black.curr < 14) then
+				if (lblack.curr < 14) then
 					white.conj = txB
 				end
-				if (grey.curr < 9) then
+				if (lgrey.curr < 9) then
 					white.conj = txG
 				end
 			end
@@ -631,23 +856,23 @@ function moonCalc(black, white, grey, three)
 			end
 		end
 
-		grey.curr = grey.curr  + 1
-		black.curr = black.curr + 1
-		white.curr = white.curr + 1
+		lgrey.curr = lgrey.curr  + 1
+		lblack.curr = lblack.curr + 1
+		lwhite.curr = lwhite.curr + 1
 		tickCount = tickCount + 1
 
 	--	DATA	SHINING		NOT SHINING
 	--	Grey	1-8			9-30
 	--  White   1-17		18-65
 	--  Black   1-13	  	14-50
-		if (white.curr > 65) then
-			white.curr = 1
+		if (lwhite.curr > 65) then
+			lwhite.curr = 1
 		end
-		if (black.curr > 50) then
-			black.curr = 1
+		if (lblack.curr > 50) then
+			lblack.curr = 1
 		end
-		if (grey.curr > 30) then
-			grey.curr = 1
+		if (lgrey.curr > 30) then
+			lgrey.curr = 1
 		end
 
 	end -- while
@@ -658,39 +883,14 @@ function moonCalc(black, white, grey, three)
 
 end
 
-
-
-function moonTimerCheck(rName, rLine, rWildcards)
-
-	local black = {curr=-1,start=-1,duration=-1,complete=-1,conj=""}
-	local white = {curr=-1,start=-1,duration=-1,complete=-1,conj=""}
-	local grey  = {curr=-1,start=-1,duration=-1,complete=-1,conj=""}
-	local three = {curr=-1,start=-1,duration=-1,complete=-1,conj=""}
-
-	-- 1: bold  22: cancel bold
-	-- 31:red	32: Green 	33: Yellow 	34: Blue 	35: Magenta		36: Cyan 	37: White 
-	--Local output variables
-	local c_white = ANSI(1)..ANSI(37)
-	local c_grey = ANSI(22)..ANSI(37)
-	local c_cyan = ANSI(1)..ANSI(36)
-	local c_dcyan = ANSI(22)..ANSI(36)
-	local c_blue = ANSI(22)..ANSI(34)
-	local c_red = ANSI(1)..ANSI(31)
-	local c_yellow = ANSI(1)..ANSI(33)
-	local c_green = ANSI(1)..ANSI(32)
-
+--  The "on-tick" processing
+--  This is where we load up the values, set them, increment, etc.
+function moonTimerCheck()
 
 	--	Load up the Global Variables
 	grey.curr =  tonumber(GetVariable("vMoonTimerGrey"))
 	black.curr = tonumber(GetVariable("vMoonTimerBlack"))
 	white.curr = tonumber(GetVariable("vMoonTimerWhite"))
-
-
-	local outputlevel = tonumber(GetVariable("vMoonAlerts"))
-	if (outputlevel == nil) then
-		outputlevel = 1
-		Variable("vMoonAlerts","1")
-	end
 
 	-- in case we are inside, make sure these wrap
 	if (white.curr~=nil and white.curr > 65) then
@@ -710,26 +910,29 @@ function moonTimerCheck(rName, rLine, rWildcards)
 		return
 	end
 
+	--  Make sure the wrapping (above) occurs before the moonCalc (below)
+	--	---------------------------------------
+	moonCalc();
+	--	---------------------------------------
+
+	local outputlevel = tonumber(GetVariable("vMoonAlerts"))
+	if (outputlevel == nil) then
+		outputlevel = 1
+		Variable("vMoonAlerts","1")
+	end
+
 	if (outputlevel == 0) then
 		return;
 	end
 
-	-- Make sure the wrapping (above) occurs before the moonCalc (below)
 
-	--	Note: Because these are table structures, they pass by reference.
-	--	---------------------------------------
-	moonCalc(black,white,grey,three);
-	--	---------------------------------------
-
-	--	DATA	SHINING		NOT SHINING
-	--	Grey	1-8			9-30
-	--  White   1-17		18-65
-	--  Black   1-13	  	14-50
+    -- Wait... What's up with all these "DoAFterSpecial" calls?
+    -- Well... there's a bug in mushcclient.  If you send a note directly before
+    -- a trigger line that appears in the middle of text, it won't trigger.
+    -- So, we delay it all so that the lines will still trigger.  Fun, eh?
 	local havealerted = 0
 	if (three.start == 0) then
-        AnsiNote(c_grey.." --------------------------- ")
-		AnsiNote(c_grey.." [ "..c_white..". "..c_dcyan.."o "..c_blue.."O  "..c_white.."Three Moons "..c_blue.."O "..c_dcyan.."o "..c_white..". ]")
-        AnsiNote(c_grey.." --------------------------- ")
+        DoAfterSpecial(0.1,"alertThreeMoons()",12)
         havealerted = 1
 	end
 
@@ -739,23 +942,577 @@ function moonTimerCheck(rName, rLine, rWildcards)
 	end
 
 	if (havealerted == 0 and white.start == 0) then
-		 AnsiNote(c_grey.."[ . o "..c_white.."Two Moons "..c_grey.."o . ]")
+		DoAfterSpecial(0.1,"AnsiNote('"..c_grey.."[ . o "..c_white.."Two Moons "..c_grey.."o . ]')", 12)
 		havealerted = 1
 	end
 
 	--	We don't have 2/3 moons yet (havealerted == 0).  What about in N ticks?
-
-	if (havealerted  == 0 and three.start <= 5) then
-		Note("[ . o O THREE Moons in "..three.start.." ticks (for "..three.duration.." ticks) O o . ]")
+	if (havealerted  == 0 and three.start <= 5 and three.start > 0) then
+		DoAfterSpecial(0.1,"OutputNote('[ . o O THREE Moons in "..three.start.." ticks (for "..three.duration.." ticks) O o . ]')", 12)
 		havealerted = 1
 	end 
 
-	if (havealerted == 0 and white.start < 4) then
-		Note(". o Two Moons in "..white.start.." ticks o .")
+	if (havealerted == 0 and white.start < 4 and white.start > 0) then
+		DoAfterSpecial(0.1,"OutputNote('. o Two Moons in "..white.start.." ticks o .')", 12)
 	end
 
 end
 
+function alertThreeMoons()
+    AnsiNote(c_grey.." --------------------------- ")
+	AnsiNote(c_grey.." [ "..c_white..". "..c_dcyan.."o "..c_blue.."O  "..c_white.."Three Moons "..c_blue.."O "..c_dcyan.."o "..c_white..". ]")
+    AnsiNote(c_grey.." --------------------------- ")
+end
+
+
+--------------------
+-- Utilities
+
+function string.starts(String,Start)
+   return string.sub(String,1,string.len(Start))==Start
+end
+
+
+--------------------
+--  Miniwin Code
+
+require "checkplugin"
+function OnPluginListChanged ()
+   do_plugin_check_now ("abc1a0944ae4af7586ce88dc", "aard_repaint_buffer")      -- check we have the repaint buffer plugin
+   do_plugin_check_now ("3e7dedbe37e44942dd46d264", "aard_GMCP_handler")        -- check we have GMCP plugin
+   do_plugin_check_now ("462b665ecb569efbf261422f", "aard_miniwindow_z_order_monitor") -- check we have z order plugin
+end -- OnPluginListChanged
+
+function OnPluginInstall ()
+
+    OnPluginConnect()   -- reset the variables (non-miniwin stuff)
+
+    local x, y, mode, flags = 
+        tonumber (GetVariable ("windowx")) or default_x,
+        tonumber (GetVariable ("windowy")) or default_y,
+        tonumber (GetVariable ("windowmode")) or WINDOW_POSITION, -- top right
+        tonumber (GetVariable ("windowflags")) or 0
+    
+    -- check miniwindow visible
+    if x < 0 or x > GetInfo (281) or
+        y < 0 or y > GetInfo (280) then
+        x, y = 0, 0  -- reset to top left
+    end -- if not visible
+
+
+    local fonts = utils.getfontfamilies ()
+    
+    -- if not there already, add it
+    if not fonts.Dina then
+        AddFont (GetInfo (66) .. "\\Dina.fon")
+        fonts = utils.getfontfamilies ()
+    end -- if Dina not installed
+    
+    if fonts ["Dina"] then
+        default_font_size = 8
+        default_font_name = "Dina"    -- the actual font
+    elseif fonts["Courier New"] then
+        default_font_size = 9
+        default_font_name = "Courier New"
+    else
+        default_font_size = 9
+        default_font_name = "Lucida Console"
+    end -- if
+
+    -- make the miniwindow
+    WindowCreate (win, 
+            x, y,   -- left, top (auto-positions)
+            width,     -- width
+            height,  -- height
+            mode,   -- position mode
+            flags,  -- flags
+            background_colour) 
+
+    -- grab fonts
+    WindowFont (win, FONT_ID, default_font_name, default_font_size, false) 
+
+    font_height = WindowFontInfo (win, FONT_ID, 1) -  WindowFontInfo (win, FONT_ID, 4) + 1 -- height
+    line_height = font_height + 1
+    TITLE_HEIGHT = line_height*1.5+2
+    MARGIN_TOP = TITLE_HEIGHT + MARGIN  -- (reset this value)
+
+    width = WindowTextWidth(win,FONT_ID, LONGEST_LINE) + MARGIN + MARGIN
+    -- top margin, graphics offset, number of lines, and bottom margin
+    height = MARGIN_TOP + TEXT_OFFSET + (line_height * 8) + MARGIN 
+
+    WindowResize(win, width, height, background_colour)
+
+    -- draw the border of the whole box
+    WindowCircleOp (win, 2, 0, 0, 0, 0, BORDER_COLOR, 6, EDGE_WIDTH, 0x000000, 1) 
+
+    -- Title Bar
+    WindowGradient(win, 2, 2, -2, TITLE_HEIGHT, title_gradient_1, title_gradient_2, 2)
+    WindowLine(win, 0, TITLE_HEIGHT, width, TITLE_HEIGHT, BORDER_COLOR, 0, EDGE_WIDTH)
+
+    txt, txtcolor = MiniwinTitleText()
+    txtlen = WindowTextWidth(win,FONT_ID, txt)
+    WindowText(win, FONT_ID, txt, (width-txtlen)/2, TITLE_HEIGHT/4, 0, 0, txtcolor, utf8)
+
+    -- [x] button (for closing it)
+    local icon_size = TITLE_HEIGHT
+    local icon_text = "x"
+    icontextlen = WindowTextWidth(win,FONT_ID, icon_text)
+    local icon_x = width - (icon_size - (icon_size-icontextlen)/2)
+    WindowLine(win, width - icon_size, 0, width - icon_size, TITLE_HEIGHT, BORDER_COLOR, 0, EDGE_WIDTH)
+    WindowText(win, FONT_ID, icon_text, icon_x , TITLE_HEIGHT/4, 0, 0, txtcolor, utf8)
+    WindowAddHotspot(win, "winclose",  
+                   width - icon_size, 0, 0, 0-(height-TITLE_HEIGHT),
+                   "",   -- MouseOver
+                   "",   -- CancelMouseOver
+                   "",   -- MouseDown
+                   "",   -- CancelMouseDown
+                   "closeMiniwin",   -- MouseUp
+                   "Close Window",  -- tooltip text
+                   1, 0)  -- hand
+
+    -- [?] button (for help)
+    icon_text = "?"
+    icontextlen = WindowTextWidth(win,FONT_ID, icon_text)
+    local icon_x = (width - icon_size) - (icon_size - (icon_size-icontextlen)/2)
+
+    WindowLine(win, width - (icon_size*2), 0, width - (icon_size*2), TITLE_HEIGHT, BORDER_COLOR, 0, EDGE_WIDTH)
+    WindowText(win, FONT_ID, icon_text, icon_x , TITLE_HEIGHT/4, 0, 0, txtcolor, utf8)
+    WindowAddHotspot(win, "winhelp",  
+                   width - (icon_size * 2), 0, 0 - icon_size, 0-(height-TITLE_HEIGHT),
+                   "",   -- MouseOver
+                   "",   -- CancelMouseOver
+                   "",   -- MouseDown
+                   "",   -- CancelMouseDown
+                   "helpMiniwin",   -- MouseUp
+                   "Click for Help",  -- tooltip text
+                   1, 0)  -- hand
+
+    -- make a hotspot
+    WindowAddHotspot(win, "_",  
+                   0, 0, 0-(icon_size*2), 0-(height-TITLE_HEIGHT),   -- Title bar minus the "close" portion
+                   "",   -- MouseOver
+                   "",   -- CancelMouseOver
+                   "mousedown",
+                   "",   -- CancelMouseDown
+                   "",   -- MouseUp
+                   "Drag to move",  -- tooltip text
+                   10, 0)  -- arrow (NS/EW) cursor
+                   
+    WindowDragHandler(win, "_", "dragmove", "dragrelease", 0) 
+  
+    CallPlugin("462b665ecb569efbf261422f", "registerMiniwindow", win) -- fail silently
+
+    if GetVariable ("enabled") == "false" then
+        ColourNote ("yellow", "", "Warning: Plugin " .. GetPluginName ().. " is currently disabled.")
+        EnablePlugin (GetPluginID (), false)
+        return
+    end -- they didn't enable us last time
+ 
+    DrawContents()
+    -- ensure window visible
+    if hidden == 0 then
+        WindowShow (win, true)
+    end
+    
+end
+
+function OnPluginClose ()
+    WindowShow (win,  false)  -- hide it
+    OnPluginSaveState()
+end
+
+function OnPluginEnable ()
+    if hidden == 0 then
+        WindowShow (win, true)
+    end
+    OnPluginSaveState()
+end 
+
+function OnPluginDisable ()
+    WindowShow (win,  false)  -- hide it
+end
+
+function OnPluginSaveState ()
+  SetVariable ("enabled",     tostring (GetPluginInfo (GetPluginID (), 17)))
+  SetVariable ("windowx",     WindowInfo (win, 10))
+  SetVariable ("windowy",     WindowInfo (win, 11))
+  SetVariable ("windowmode",  WindowInfo (win, 7))
+  SetVariable ("windowflags", WindowInfo (win, 8))
+end 
+
+function mousedown (flags, hotspot_id)
+
+    if hotspot_id == "_" then
+    
+        -- find where mouse is so we can adjust window relative to mouse
+        startx, starty = WindowInfo (win, 14), WindowInfo (win, 15)
+        
+        -- find where window is in case we drag it offscreen
+        origx, origy = WindowInfo (win, 10), WindowInfo (win, 11)
+      
+        return
+    end -- if
+    
+    
+    local n = tonumber (hotspot_id)
+    
+    -- draw the button border in another colour for visual feedback
+    WindowRectOp (win, 1, 
+                frames [n].x1, frames [n].y1, frames [n].x2, frames [n].y2, 
+                MOUSE_DOWN_COLOUR) 
+    
+    schedRedraw()         
+end
+
+
+function cancelmousedown (flags, hotspot_id)
+  local n = tonumber (hotspot_id)
+
+  schedRedraw()                
+
+end -- cancelmousedown
+
+function mouseup (flags, hotspot_id)
+   
+  -- fix border colour
+  cancelmousedown (flags, hotspot_id)
+  
+end -- mouseup
+
+function schedRedraw()
+    BroadcastPlugin (999, "repaint")
+end
+
+function dragmove(flags, hotspot_id)
+
+    -- check if the layout is locked
+    if GetPluginVariable("c293f9e7f04dde889f65cb90", "lock_down_miniwindows") == "1" then
+        return
+    end
+
+    -- find where it is now
+    local posx, posy = WindowInfo (win, 17),
+                 WindowInfo (win, 18)
+    
+    -- move the window to the new location
+    WindowPosition(win, posx - startx, posy - starty, 0, 2);
+    DrawContents()
+    
+    -- change the mouse cursor shape appropriately
+    if (posx < 0 or posx > GetInfo (281) or
+    posy < 0 or posy > GetInfo (280)) then
+
+        SetCursor (11)   -- X cursor
+    else
+        SetCursor (10)   -- arrow (NS/EW) cursor
+    end -- if
+  
+end
+
+function dragrelease(flags, hotspot_id)
+  local newx, newy = WindowInfo (win, 17), WindowInfo (win, 18)
+  
+  -- don't let them drag it out of view
+  if (newx < 0 or newx > GetInfo (281) or
+     newy < 0 or newy > GetInfo (280)) then
+     -- put it back
+    WindowPosition(win, origx, origy, 0, 2);
+  end -- if out of bounds
+  
+end -- dragrelease
+
+
+--  Specifically close or open the miniwin
+function closeMiniwin()
+    hidden = 1
+    WindowShow (win, false)
+end
+
+function openMiniwin()
+    hidden = 0
+    DrawContents()
+    WindowShow (win, true)
+end
+
+function helpMiniwin()
+    -- Hook for Help
+    help_threeMoons()
+end
+
+--------------------
+--  The actual minwindow drawing
+
+function MiniwinTitleText()
+    return "Moons", H_WHITE
+end
+
+function DrawContents()
+    if (hidden ~= 0) then
+        return
+    end
+    -- this is a hook to draw the contents
+    DrawMoonWindow()
+end
+
+function DrawMoonWindow()
+
+    DebugNote("Redrawing the moon window.")
+
+    --WindowResize(win, width, height, background_colour)
+    --WindowMoveHotspot(win, "resize", width-RESIZE_TAG_SIZE, height-RESIZE_TAG_SIZE, width, height)
+    
+    -- Clear the window
+    WindowRectOp(win, miniwin.rect_fill, EDGE_WIDTH, MARGIN_TOP,(0-EDGE_WIDTH),(0-EDGE_WIDTH),background_colour)
+
+    DrawWhiteMoon()
+    DrawGreyMoon()
+    DrawBlackMoon()
+
+    DrawMoonText()
+
+    schedRedraw()
+    Repaint()
+end
+
+
+function DrawWhiteMoon()
+
+    local vlu = white.curr
+
+	--	DATA	SHINING		NOT SHINING
+	--  White   1-17		18-65
+    local x = MARGIN
+    local y = MARGIN_TOP
+
+    if (vlu == nil or vlu > 17) then
+        DrawMoonDown(x, y)
+    else
+        DrawMoonUp(x,y,MOON_COLOR_WHITE)
+    end
+
+end
+
+
+
+function DrawGreyMoon()
+
+    local vlu = grey.curr
+
+	--	DATA	SHINING		NOT SHINING
+	--	Grey	1-8			9-30
+    local x = (MARGIN * 2) + MOON_SIZE 
+    local y = MARGIN_TOP
+
+    if (vlu == nil or vlu > 8) then
+        DrawMoonDown(x, y)
+    else
+        DrawMoonUp(x,y,MOON_COLOR_GREY)
+    end
+
+end
+
+function DrawBlackMoon()
+
+    local vlu = black.curr
+
+	--	DATA	SHINING		NOT SHINING
+	--  Black   1-13	  	14-50
+
+    local x = (MARGIN * 3) + (MOON_SIZE * 2)
+    local y = MARGIN_TOP
+
+    if (vlu == nil or vlu > 13) then
+        DrawMoonDown(x, y)
+    else
+        DrawMoonUp(x,y,MOON_COLOR_BLACK)
+    end
+
+end
+
+function DrawMoonDown(x,y)
+    WindowCircleOp (win, miniwin.circle_ellipse, x, y, x+MOON_SIZE,y+MOON_SIZE, 
+        MOON_COLOR_DOWN, miniwin.pen_solid, 1, --pen color/style/width
+        0, miniwin.brush_null)   --brush color/style
+end
+
+function DrawMoonUp(x,y,col)
+    WindowCircleOp (win, miniwin.circle_ellipse, x, y, x+MOON_SIZE,y+MOON_SIZE, 
+        col, miniwin.pen_solid, 1, --pen color/style/width
+        col, miniwin.brush_solid)   --brush color/style
+
+end
+
+function safeprint(val)
+    if (val == nil) then
+        return "nil"
+    end
+    return val
+end
+
+function DrawMoonText()
+
+    -- Figure out the current state of the moons
+
+    local lineNum = 1
+
+    ----- "3-moons: in x ticks"
+    if (three.start == 0) then
+        local outtext = ""..three.duration
+        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" now for ", H_GREEN}, {outtext , H_RED}, {" ticks",H_GREEN}} )
+    elseif (three.start <= 5 and three.start > 0) then
+        local outtext = ""..three.start
+        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ", H_RED}, {outtext , H_RED}, {" ticks",H_RED}})
+    elseif (three.start > 0) then
+        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ".. three.start.." ticks",H_GREY}})
+    else
+        lineNum = lineNum - 2 -- invalidate the upcoming increments
+    end
+    lineNum = lineNum + 1
+
+    -- blank line
+    lineNum = lineNum + 1
+
+    ------  "W/g in x ticks"
+    if (white.start ~= three.start) then
+    	if (white.start == 0) then
+            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" Now",H_GREEN}, {" ("..white.duration.."t left)",H_GREEN}} )
+    	elseif (white.start > 0) then
+    		sevcol = H_GREY
+    		if (white.start < 6) then
+    			sevcol = H_YELLOW
+    		end
+            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" in "..white.start.."t",sevcol}, {" (for "..white.duration.."t)",H_GREY}} )
+        else
+            lineNum = lineNum - 1 -- invalidate the upcoming increment
+        end
+        lineNum = lineNum + 1
+    end
+    
+    ------  "2-moons B/g in x ticks"
+	if (white.start ~= black.start) then   -- (if this is true, black.start will also equal three.start)
+		if (black.start == 0) then
+            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE}, {"/", H_GREY}, winConj(black.conj), {":", H_GREY}, {" Now",H_GREEN}, {" ("..black.duration.."t left)",H_GREEN}} )
+		elseif (black.start > 0) then
+    		sevcol = H_GREY
+    		if (white.start < 6) then
+    			sevcol = H_YELLOW
+    		end
+            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE},{"/", H_GREY}, winConj(black.conj),{":", H_GREY}, {" in "..black.start.."t",sevcol}, {" (for "..black.duration.."t)",H_GREY}} )
+        else
+            lineNum = lineNum - 1 -- invalidate the upcoming increment
+        end
+        lineNum = lineNum + 1
+	end
+
+
+
+	--	DATA	SHINING		NOT SHINING
+	--	Grey	1-8			9-30
+	--  White   1-17		18-65
+	--  Black   1-13	  	14-50
+
+    local tix = 0
+
+    lineNum = lineNum + 1
+
+    ------  "White:  in x ticks"
+    if (white.curr == nil) then
+        DrawText(lineNum, {{"White: ", H_WHITE}, {"unknown", H_GREY}}) 
+    elseif (white.curr > 17) then
+        DrawText(lineNum, {{"White: ", H_WHITE}, 
+                {"[".. (white.curr - 17).. "/48] ", H_RED},
+                {"up in ".. (66 - white.curr).. "t", H_GREY}}) 
+    else
+        DrawText(lineNum, {{"White: ", H_WHITE}, 
+                {"[".. white.curr.. "/17] ", H_GREEN},
+                {(18 - white.curr).. "t left", H_GREY}}) 
+    end
+    lineNum = lineNum + 1
+
+    ------  "Grey:  in x ticks"
+    textOut = {}
+    tix = 0
+    if (grey.curr == nil) then
+        DrawText(lineNum, {{"Grey:  unknown", H_GREY}}) 
+    elseif (grey.curr > 8) then
+        DrawText(lineNum, {{"Grey:  ", H_GREY}, 
+                {"[".. (grey.curr - 8).. "/22] ", H_RED},
+                {"up in ".. (31 - grey.curr).. "t", H_GREY}}) 
+    else
+        DrawText(lineNum, {{"Grey:  ", H_GREY}, 
+                {"[".. grey.curr.. "/8] ", H_GREEN},
+                {(9 - grey.curr).. "t left", H_GREY}}) 
+    end
+    lineNum = lineNum + 1
+
+
+    ------  "Black:  in x ticks"
+    textOut = {}
+    tix = 0
+    if (black.curr == nil) then
+        textOut = {"unk", H_GREY}
+        DrawText(lineNum, {{"Black: ", H_BLUE}, {"unknown", H_GREY}}) 
+    elseif (black.curr > 13) then
+        DrawText(lineNum, {{"Black: ", H_BLUE}, 
+                {"[".. (black.curr - 13).. "/37] ", H_RED},
+                {"up in ".. (51 - black.curr).. "t", H_GREY}}) 
+    else
+        DrawText(lineNum, {{"Black: ", H_BLUE}, 
+                {"[".. black.curr.. "/13] ", H_GREEN},
+                {(14 - black.curr).. "t left", H_GREY}})
+    end
+    lineNum = lineNum + 1
+
+
+    if (black.curr == nil or white.curr == nil or grey.curr == nil) then
+        lineNum = lineNum + 1
+
+        DrawText(lineNum, {{" Waiting for moon data", H_CYAN}})
+        lineNum = lineNum + 1
+
+        DrawText(lineNum, {{"Stay outside for a while", H_CYAN}})
+        lineNum = lineNum + 1
+    end
+
+end
+
+
+function winConj(rawConjunction)
+    if (string.starts(rawConjunction,"w")) then
+        return {rawConjunction, H_WHITE}
+    elseif (string.starts(rawConjunction,"b")) then
+        return {rawConjunction, H_BLUE}
+    else    --grey
+        return {rawConjunction, H_GREY}
+    end
+
+end
+
+
+--Example:  DrawText(1, {{"My stuff: ",0x0000ff}, {"awesome", 0xffffff}})
+--Example:  DrawText(1, {{"My stuff: ",0x0000ff}})
+function DrawText(line, listText)
+
+    local left = MARGIN
+    local top = TEXT_OFFSET + MARGIN_TOP + ((line - 1) * line_height)
+    
+    for _, v in ipairs (listText) do
+        left = left + WindowText (win, FONT_ID, v[1], left, top, 0, 0, v[2])
+    end -- for each style run       
+
+end
+
+
+debug = false
+function DebugNote(text)
+    if (debug == true) then
+        AnsiNote(c_dcyan..text..c_grey)
+    end
+end
+
+function OutputNote(text)
+    AnsiNote(c_dcyan..text..c_grey)
+end
 
 ]]>
 </script>
