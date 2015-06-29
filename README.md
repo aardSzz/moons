@@ -14,7 +14,7 @@ Commands:
 
 The layout for the miniwindow is locked along with the other Aardwolf plugins.  "aard layout lock" and "aard layout unlock" will lock and unlock the layout, preventing/allowing the miniwin from being repositioned.
 
-Note: You can also use "3moons" or "moon" for the channels, help, and miniwin commands
+Note: You can also use "3moons" or "moon" for the channels, help, miniwin and moon commands
 
 ## To install
 1. Download the raw file from github:
