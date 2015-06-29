@@ -35,21 +35,6 @@ moonlevel - sets how much output to show
 
 <include name="constants.lua"/>
 
-
-<!--  TODO:
-
-* Smaller moons
-* Moons fly across the pane.  (White flys right-to-left or vice versa)
-
-
-* Do these:
- bring to front
-         CallPlugin("462b665ecb569efbf261422f","boostMe", win)
- send to back
-         CallPlugin("462b665ecb569efbf261422f","dropMe", win)        
-
--->
-
 <!--  Triggers  -->
 
 <triggers>
@@ -261,8 +246,9 @@ TITLE_HEIGHT = 25
 MARGIN = 6
 MARGIN_TOP = TITLE_HEIGHT + MARGIN
 
-MOON_SIZE = 30
+MOON_SIZE = 14
 TEXT_OFFSET = 40
+MOON_X_RANGE = 800    -- width, minus (2) margins, minus the moon width
 
 WINDOW_POSITION = 6
 BORDER_COLOR = 0xadadad
@@ -298,6 +284,7 @@ H_GREEN = 0x00ff00
 H_YELLOW = 0x00ffff
 H_RED = 0x0000ff
 H_GREY = 0x808080
+H_DARK_GREY = 0x303030
 H_DARK_BLUE = 0x800000
 H_BLUE = 0xff0000
 H_DCYAN = 0x808000
@@ -314,10 +301,10 @@ c_red = ANSI(1)..ANSI(31)
 c_yellow = ANSI(1)..ANSI(33)
 c_green = ANSI(1)..ANSI(32)
 
-MOON_COLOR_DOWN = 0x202020  --(border only)
+MOON_COLOR_DOWN = 0x202020  --(unused)
 MOON_COLOR_WHITE = 0xffffff 
 MOON_COLOR_BLACK = H_DARK_BLUE
-MOON_COLOR_GREY = H_GREY
+MOON_COLOR_GREY = 0x707070
 
 
 ----------------------
@@ -431,14 +418,15 @@ function help_threeMoons()
 
 This is Galaban's simple moon monitoring plugin.  The commands are:
 
-moons           - shows the current state of the moons.
-moons <channel> - Echos the next three moon conjunction on a channel
+moons               - shows the current state of the moons.
+moons <channel>     - Sends the next three moon conjunction to a channel
 
-moons miniwin   - show/hide the moon miniwindow
-moons help      - shows this screen
-moonticks       - enable/disable showing the moons every tick
-moonalerts      - enable/disable the alerts regarding conjunctions
-moonlevel       - sets how much output to show
+moons miniwin       - show/hide the moon miniwindow
+moons miniwin reset - reset the miniwin (in case it gets lost)
+moons help          - shows this screen
+moonticks           - enable/disable showing the moons every tick
+moonalerts          - enable/disable the alerts regarding conjunctions
+moonlevel           - sets how much output to show
 
 NOte: You can also use "3moons" or "moon" for the channels/help
     ]]
@@ -504,10 +492,7 @@ function moonRise(moonName)
     end
     SetVariable(moonvar,1)
 
-    if (vly == nil) then
-        DebugNote("Forcing redraw..")
-        DrawMoonWindow()
-    end
+    DrawMoonWindow()
 end
 
 function moonFall(moon, newVal)
@@ -519,10 +504,7 @@ function moonFall(moon, newVal)
 
     SetVariable(varid, newVal)
 
-    if (vlu == nil) then
-        DebugNote("Forcing redraw..")
-        DrawMoonWindow()
-    end
+    DrawMoonWindow()
 end
 
 
@@ -546,12 +528,29 @@ function processTick()
     
     vlu = tonumber(GetVariable("vMoonTicks"))
     if (vlu ~= nil and vlu == 1) then
-        DoAfterSpecial(0.1, "threeMoons()", 12)
+        DelayCall("threeMoons()")   
     end
     -- Also, re-draw the moon window now that we have new data
     DrawMoonWindow()
 end
 
+local trgCntr = 1
+function DelayCall(text)
+
+    -- Make the label semi-unique in case this gets called twice in succession
+    if (trgCntr > 100) then
+        trgCntr = 1
+    end
+    trgCntr = trgCntr + 1
+
+    -- (Make it match a full line so we're not messing up trigger test
+    AddTriggerEx("tmpTrgMoons"..trgCntr, 
+        "^(.*?)$", 
+        text,   --what to execute
+        trigger_flag.Enabled + trigger_flag.RegularExpression + trigger_flag.OneShot + trigger_flag.KeepEvaluating + trigger_flag.Temporary, 
+        -1, 0, "", "",sendto.script, 100)
+
+end
 
 --------------------
 --  Channels
@@ -561,6 +560,11 @@ function threeMoons_switch(rName, rLine, rWildcards)
     local cmd = rWildcards[2]
     if (cmd == "help") then
         help_threeMoons()
+        return
+    end
+
+    if (cmd == "miniwin reset") then
+        resetMiniWin()
         return
     end
 
@@ -581,22 +585,32 @@ function threeMoons_switch(rName, rLine, rWildcards)
     local outString = ""
 
     if (three.start == 0) then
-        outString = outString.."The next 3-moon conjunction is right now (for "..three.duration.." more ticks). "
+        outString = outString.."The next 3-moon conjunction is right now lasting "..three.duration.." more ticks)."
     else
-        outString = outString.."The next 3-moon conjunction is in "..three.start.." ticks (for "..three.duration.." ticks). "
+        local timeStr = ""
+        if (three.start > 10) then
+            local calcV = three.start
+            if (calcV > 120) then
+                local hourV = math.floor(calcV / 120)
+                calcV = calcV - (hourV * 120)
+                timeStr = timeStr..hourV.."h "
+            end
+            timeStr = "("..timeStr..math.floor(calcV/2).."min)"
+        end
+        outString = outString.."The next 3-moon conjunction is in "..three.start.." ticks "..timeStr.." lasting "..three.duration.." ticks."
     end
 
-    if (black.start < white.start) then
+    if (black.start < white.start and black.start ~= three.start) then
         if (black.start == 0) then
-            outString = outString.. "The next 2-moons (Black/"..spelloutConj(black.conj)..") is now! (for "..black.duration.." ticks)."
+            outString = outString.. " The next 2-moons (Black/"..spelloutConj(black.conj)..") is now for "..black.duration.." ticks."
         else
-            outString = outString.. "The next 2-moons (Black/"..spelloutConj(black.conj)..") in "..black.start.." ticks (for "..black.duration.." ticks)."
+            outString = outString.. " The next 2-moons (Black/"..spelloutConj(black.conj)..") in "..black.start.." ticks for "..black.duration.." ticks."
         end
-    else
+    elseif (white.start ~= three.start) then
         if (white.start == 0) then
-            outString = outString.. "The next 2-moons (White/"..spelloutConj(white.conj)..") is now! (for "..white.duration.." ticks)."
+            outString = outString.. " The next 2-moons (White/"..spelloutConj(white.conj)..") is now for "..white.duration.." ticks."
         else
-            outString = outString.. "The next 2-moons (White/"..spelloutConj(white.conj)..") in "..white.start.." ticks (for "..white.duration.." ticks)."
+            outString = outString.. " The next 2-moons (White/"..spelloutConj(white.conj)..") in "..white.start.." ticks for "..white.duration.." ticks."
         end
     end
 
@@ -926,13 +940,13 @@ function moonTimerCheck()
 	end
 
 
-    -- Wait... What's up with all these "DoAFterSpecial" calls?
-    -- Well... there's a bug in mushcclient.  If you send a note directly before
-    -- a trigger line that appears in the middle of text, it won't trigger.
+    -- Wait... What's up with all these "DelayCall" calls?
+    -- Well... there's a bug in mushcclient.  If you send a note during GMCP
+    -- processing (telnet subnegotiation), the next line of text will not trigger.
     -- So, we delay it all so that the lines will still trigger.  Fun, eh?
 	local havealerted = 0
 	if (three.start == 0) then
-        DoAfterSpecial(0.1,"alertThreeMoons()",12)
+        DelayCall("alertThreeMoons()")
         havealerted = 1
 	end
 
@@ -942,18 +956,18 @@ function moonTimerCheck()
 	end
 
 	if (havealerted == 0 and white.start == 0) then
-		DoAfterSpecial(0.1,"AnsiNote('"..c_grey.."[ . o "..c_white.."Two Moons "..c_grey.."o . ]')", 12)
+		DelayCall("AnsiNote('"..c_grey.."[ . o "..c_white.."Two Moons "..c_grey.."o . ]')")
 		havealerted = 1
 	end
 
 	--	We don't have 2/3 moons yet (havealerted == 0).  What about in N ticks?
 	if (havealerted  == 0 and three.start <= 5 and three.start > 0) then
-		DoAfterSpecial(0.1,"OutputNote('[ . o O THREE Moons in "..three.start.." ticks (for "..three.duration.." ticks) O o . ]')", 12)
+		DelayCall("OutputNote('[ . o O THREE Moons in "..three.start.." ticks (for "..three.duration.." ticks) O o . ]')")
 		havealerted = 1
 	end 
 
 	if (havealerted == 0 and white.start < 4 and white.start > 0) then
-		DoAfterSpecial(0.1,"OutputNote('. o Two Moons in "..white.start.." ticks o .')", 12)
+		DelayCall("OutputNote('. o Two Moons in "..white.start.." ticks o .')")
 	end
 
 end
@@ -993,12 +1007,18 @@ function OnPluginInstall ()
         tonumber (GetVariable ("windowmode")) or WINDOW_POSITION, -- top right
         tonumber (GetVariable ("windowflags")) or 0
     
+--[[
+    -- Note:  I don't like this because the main window may resize after plugin install
+    -- This will force our miniwin to be within the default window size.  However,
+    -- the normal Aard miniwins fill that window size already.  So, ignore this and
+    -- hope that no one loses their miniwindow!
+
     -- check miniwindow visible
     if x < 0 or x > GetInfo (281) or
         y < 0 or y > GetInfo (280) then
-        x, y = 0, 0  -- reset to top left
+        x, y = default_x, default_y
     end -- if not visible
-
+--]]
 
     local fonts = utils.getfontfamilies ()
     
@@ -1036,9 +1056,15 @@ function OnPluginInstall ()
     TITLE_HEIGHT = line_height*1.5+2
     MARGIN_TOP = TITLE_HEIGHT + MARGIN  -- (reset this value)
 
+    -- Moon-window-specifc settings
+    MOON_SIZE = TITLE_HEIGHT
+    TEXT_OFFSET = MOON_SIZE + (MARGIN * 2)
+
     width = WindowTextWidth(win,FONT_ID, LONGEST_LINE) + MARGIN + MARGIN
     -- top margin, graphics offset, number of lines, and bottom margin
     height = MARGIN_TOP + TEXT_OFFSET + (line_height * 8) + MARGIN 
+
+    MOON_X_RANGE = (width - MOON_SIZE) - (MARGIN * 2)
 
     WindowResize(win, width, height, background_colour)
 
@@ -1130,6 +1156,7 @@ end
 
 function OnPluginDisable ()
     WindowShow (win,  false)  -- hide it
+    OnPluginSaveState()
 end
 
 function OnPluginSaveState ()
@@ -1152,32 +1179,10 @@ function mousedown (flags, hotspot_id)
       
         return
     end -- if
-    
-    
-    local n = tonumber (hotspot_id)
-    
-    -- draw the button border in another colour for visual feedback
-    WindowRectOp (win, 1, 
-                frames [n].x1, frames [n].y1, frames [n].x2, frames [n].y2, 
-                MOUSE_DOWN_COLOUR) 
-    
+        
     schedRedraw()         
 end
 
-
-function cancelmousedown (flags, hotspot_id)
-  local n = tonumber (hotspot_id)
-
-  schedRedraw()                
-
-end -- cancelmousedown
-
-function mouseup (flags, hotspot_id)
-   
-  -- fix border colour
-  cancelmousedown (flags, hotspot_id)
-  
-end -- mouseup
 
 function schedRedraw()
     BroadcastPlugin (999, "repaint")
@@ -1210,15 +1215,17 @@ function dragmove(flags, hotspot_id)
 end
 
 function dragrelease(flags, hotspot_id)
-  local newx, newy = WindowInfo (win, 17), WindowInfo (win, 18)
-  
-  -- don't let them drag it out of view
-  if (newx < 0 or newx > GetInfo (281) or
-     newy < 0 or newy > GetInfo (280)) then
-     -- put it back
-    WindowPosition(win, origx, origy, 0, 2);
-  end -- if out of bounds
-  
+    local newx, newy = WindowInfo (win, 17), WindowInfo (win, 18)
+    
+    -- don't let them drag it out of view
+    if (newx < 0 or newx > GetInfo (281) or
+        newy < 0 or newy > GetInfo (280)) then
+
+        -- put it back
+        WindowPosition(win, origx, origy, 0, 2);
+    end -- if out of bounds
+    
+    OnPluginSaveState()
 end -- dragrelease
 
 
@@ -1226,12 +1233,23 @@ end -- dragrelease
 function closeMiniwin()
     hidden = 1
     WindowShow (win, false)
+    OnPluginSaveState()
 end
 
 function openMiniwin()
     hidden = 0
     DrawContents()
     WindowShow (win, true)
+    OnPluginSaveState()
+end
+
+function resetMiniWin()
+    x = 0
+    y = 0
+    mode = WINDOW_POSITION    --top right
+    WindowPosition(win, x, y, 0, 2);
+
+    openMiniwin()
 end
 
 function helpMiniwin()
@@ -1284,9 +1302,8 @@ function DrawWhiteMoon()
     local x = MARGIN
     local y = MARGIN_TOP
 
-    if (vlu == nil or vlu > 17) then
-        DrawMoonDown(x, y)
-    else
+    if (vlu ~= nil and vlu <= 17) then
+        x = MARGIN + ((MOON_X_RANGE / 17) * vlu)
         DrawMoonUp(x,y,MOON_COLOR_WHITE)
     end
 
@@ -1300,12 +1317,11 @@ function DrawGreyMoon()
 
 	--	DATA	SHINING		NOT SHINING
 	--	Grey	1-8			9-30
-    local x = (MARGIN * 2) + MOON_SIZE 
-    local y = MARGIN_TOP
+    local x = MARGIN 
+    local y = MARGIN_TOP + MARGIN
 
-    if (vlu == nil or vlu > 8) then
-        DrawMoonDown(x, y)
-    else
+    if (vlu ~= nil and vlu <= 8) then
+        x = MARGIN + ((MOON_X_RANGE / 7) * (8-vlu))
         DrawMoonUp(x,y,MOON_COLOR_GREY)
     end
 
@@ -1318,17 +1334,17 @@ function DrawBlackMoon()
 	--	DATA	SHINING		NOT SHINING
 	--  Black   1-13	  	14-50
 
-    local x = (MARGIN * 3) + (MOON_SIZE * 2)
-    local y = MARGIN_TOP
+    local x = MARGIN 
+    local y = MARGIN_TOP + (MARGIN * 2)
 
-    if (vlu == nil or vlu > 13) then
-        DrawMoonDown(x, y)
-    else
+    if (vlu ~= nil and vlu <= 13) then
+        x = MARGIN + ((MOON_X_RANGE / 12) * (13 - vlu))
         DrawMoonUp(x,y,MOON_COLOR_BLACK)
     end
 
 end
 
+-- unused
 function DrawMoonDown(x,y)
     WindowCircleOp (win, miniwin.circle_ellipse, x, y, x+MOON_SIZE,y+MOON_SIZE, 
         MOON_COLOR_DOWN, miniwin.pen_solid, 1, --pen color/style/width
@@ -1340,6 +1356,7 @@ function DrawMoonUp(x,y,col)
         col, miniwin.pen_solid, 1, --pen color/style/width
         col, miniwin.brush_solid)   --brush color/style
 
+
 end
 
 function safeprint(val)
@@ -1350,8 +1367,6 @@ function safeprint(val)
 end
 
 function DrawMoonText()
-
-    -- Figure out the current state of the moons
 
     local lineNum = 1
 
@@ -1394,7 +1409,7 @@ function DrawMoonText()
             DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE}, {"/", H_GREY}, winConj(black.conj), {":", H_GREY}, {" Now",H_GREEN}, {" ("..black.duration.."t left)",H_GREEN}} )
 		elseif (black.start > 0) then
     		sevcol = H_GREY
-    		if (white.start < 6) then
+    		if (black.start < 6) then
     			sevcol = H_YELLOW
     		end
             DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE},{"/", H_GREY}, winConj(black.conj),{":", H_GREY}, {" in "..black.start.."t",sevcol}, {" (for "..black.duration.."t)",H_GREY}} )
