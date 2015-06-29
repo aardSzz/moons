@@ -1303,7 +1303,7 @@ function DrawWhiteMoon()
     local y = MARGIN_TOP
 
     if (vlu ~= nil and vlu <= 17) then
-        x = MARGIN + ((MOON_X_RANGE / 17) * vlu)
+        x = MARGIN + ((MOON_X_RANGE / 17) * (vlu-1))
         DrawMoonUp(x,y,MOON_COLOR_WHITE)
     end
 
