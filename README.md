@@ -6,12 +6,15 @@ Commands:
     moons  - shows the current state of the moons.
     moons help - shows the help screen
     moons <channel> - Echos the next three moon conjunction on a channel
-    moons miniwin   - show/hide the moo
+    moons miniwin   - show/hide the miniwindow
+    moons miniwin reset - resets the miniwindow in case it gets lost
     moonticks - enable/disable showing the moons every tick
     moonalerts - enable/disable the alerts regarding conjunctions
     moonlevel - sets how much output to show
 
-Note: You can also use "3moons" or "moon" for the channels/help
+The layout for the miniwindow is locked along with the other Aardwolf plugins.  "aard layout lock" and "aard layout unlock" will lock and unlock the layout, preventing/allowing the miniwin from being repositioned.
+
+Note: You can also use "3moons" or "moon" for the channels, help, and miniwin commands
 
 ## To install
 1. Download the raw file from github:
