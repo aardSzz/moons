@@ -1061,8 +1061,8 @@ function OnPluginInstall ()
     TEXT_OFFSET = MOON_SIZE + (MARGIN * 2)
 
     width = WindowTextWidth(win,FONT_ID, LONGEST_LINE) + MARGIN + MARGIN
-    -- top margin, graphics offset, number of lines, and bottom margin
-    height = MARGIN_TOP + TEXT_OFFSET + (line_height * 8) + MARGIN 
+    -- top margin, graphics offset, number of lines, and bottom margin (add an extra line for space)
+    height = MARGIN_TOP + TEXT_OFFSET + (line_height * 9) + MARGIN 
 
     MOON_X_RANGE = (width - MOON_SIZE) - (MARGIN * 2)
 
@@ -1092,7 +1092,7 @@ function OnPluginInstall ()
                    "",   -- CancelMouseOver
                    "",   -- MouseDown
                    "",   -- CancelMouseDown
-                   "closeMiniwin",   -- MouseUp
+                   "exoutMiniwin",   -- MouseUp
                    "Close Window",  -- tooltip text
                    1, 0)  -- hand
 
@@ -1229,6 +1229,11 @@ function dragrelease(flags, hotspot_id)
 end -- dragrelease
 
 
+function exoutMiniwin()
+    Execute("moons miniwin")
+    Note("Minwindow closed.  Use 'moons miniwin' to re-open it.")
+end
+
 --  Specifically close or open the miniwin
 function closeMiniwin()
     hidden = 1
@@ -1303,7 +1308,7 @@ function DrawWhiteMoon()
     local y = MARGIN_TOP
 
     if (vlu ~= nil and vlu <= 17) then
-        x = MARGIN + ((MOON_X_RANGE / 17) * (vlu-1))
+        x = MARGIN + ((MOON_X_RANGE / 16) * (vlu-1))
         DrawMoonUp(x,y,MOON_COLOR_WHITE)
     end
 
