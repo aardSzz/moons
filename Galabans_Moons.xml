@@ -1375,55 +1375,56 @@ function DrawMoonText()
 
     local lineNum = 1
 
-    ----- "3-moons: in x ticks"
-    if (three.start == 0) then
-        local outtext = ""..three.duration
-        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" now for ", H_GREEN}, {outtext , H_RED}, {" ticks",H_GREEN}} )
-    elseif (three.start <= 5 and three.start > 0) then
-        local outtext = ""..three.start
-        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ", H_RED}, {outtext , H_RED}, {" ticks",H_RED}})
-    elseif (three.start > 0) then
-        DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ".. three.start.." ticks",H_GREY}})
-    else
-        lineNum = lineNum - 2 -- invalidate the upcoming increments
-    end
-    lineNum = lineNum + 1
-
-    -- blank line
-    lineNum = lineNum + 1
-
-    ------  "W/g in x ticks"
-    if (white.start ~= three.start) then
-    	if (white.start == 0) then
-            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" Now",H_GREEN}, {" ("..white.duration.."t left)",H_GREEN}} )
-    	elseif (white.start > 0) then
-    		sevcol = H_GREY
-    		if (white.start < 6) then
-    			sevcol = H_YELLOW
-    		end
-            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" in "..white.start.."t",sevcol}, {" (for "..white.duration.."t)",H_GREY}} )
+    if (black.curr == nil or white.curr == nil or grey.curr == nil) then
+        ----- "3-moons: in x ticks"
+        if (three.start == 0) then
+            local outtext = ""..three.duration
+            DrawText(lineNum, {{"3-moons:", H_CYAN}, {" now for ", H_GREEN}, {outtext , H_RED}, {" ticks",H_GREEN}} )
+        elseif (three.start <= 5 and three.start > 0) then
+            local outtext = ""..three.start
+            DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ", H_RED}, {outtext , H_RED}, {" ticks",H_RED}})
+        elseif (three.start > 0) then
+            DrawText(lineNum, {{"3-moons:", H_CYAN}, {" in ".. three.start.." ticks",H_GREY}})
         else
-            lineNum = lineNum - 1 -- invalidate the upcoming increment
+            lineNum = lineNum - 2 -- invalidate the upcoming increments
         end
         lineNum = lineNum + 1
-    end
     
-    ------  "2-moons B/g in x ticks"
-	if (white.start ~= black.start) then   -- (if this is true, black.start will also equal three.start)
-		if (black.start == 0) then
-            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE}, {"/", H_GREY}, winConj(black.conj), {":", H_GREY}, {" Now",H_GREEN}, {" ("..black.duration.."t left)",H_GREEN}} )
-		elseif (black.start > 0) then
-    		sevcol = H_GREY
-    		if (black.start < 6) then
-    			sevcol = H_YELLOW
-    		end
-            DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE},{"/", H_GREY}, winConj(black.conj),{":", H_GREY}, {" in "..black.start.."t",sevcol}, {" (for "..black.duration.."t)",H_GREY}} )
-        else
-            lineNum = lineNum - 1 -- invalidate the upcoming increment
-        end
+        -- blank line
         lineNum = lineNum + 1
-	end
-
+    
+        ------  "W/g in x ticks"
+        if (white.start ~= three.start) then
+        	if (white.start == 0) then
+                DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" Now",H_GREEN}, {" ("..white.duration.."t left)",H_GREEN}} )
+        	elseif (white.start > 0) then
+        		sevcol = H_GREY
+        		if (white.start < 6) then
+        			sevcol = H_YELLOW
+        		end
+                DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"W", H_WHITE},{"/", H_GREY}, winConj(white.conj),{":", H_GREY}, {" in "..white.start.."t",sevcol}, {" (for "..white.duration.."t)",H_GREY}} )
+            else
+                lineNum = lineNum - 1 -- invalidate the upcoming increment
+            end
+            lineNum = lineNum + 1
+        end
+        
+        ------  "2-moons B/g in x ticks"
+    	if (white.start ~= black.start) then   -- (if this is true, black.start will also equal three.start)
+    		if (black.start == 0) then
+                DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE}, {"/", H_GREY}, winConj(black.conj), {":", H_GREY}, {" Now",H_GREEN}, {" ("..black.duration.."t left)",H_GREEN}} )
+    		elseif (black.start > 0) then
+        		sevcol = H_GREY
+        		if (black.start < 6) then
+        			sevcol = H_YELLOW
+        		end
+                DrawText(lineNum, {{"2-moons: ", H_CYAN}, {"B", H_BLUE},{"/", H_GREY}, winConj(black.conj),{":", H_GREY}, {" in "..black.start.."t",sevcol}, {" (for "..black.duration.."t)",H_GREY}} )
+            else
+                lineNum = lineNum - 1 -- invalidate the upcoming increment
+            end
+            lineNum = lineNum + 1
+    	end
+    end
 
 
 	--	DATA	SHINING		NOT SHINING
