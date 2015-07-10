@@ -1375,7 +1375,7 @@ function DrawMoonText()
 
     local lineNum = 1
 
-    if (black.curr == nil or white.curr == nil or grey.curr == nil) then
+    if (black.curr ~= nil and white.curr ~= nil and grey.curr ~= nil) then
         ----- "3-moons: in x ticks"
         if (three.start == 0) then
             local outtext = ""..three.duration
