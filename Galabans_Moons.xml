@@ -1434,13 +1434,13 @@ function DrawMoonText()
 
     lineNum = lineNum + 1
 
-    ------  "White:  in x ticks"
+ ------  "White:  in x ticks"
     if (white.curr == nil) then
         DrawText(lineNum, {{"White: ", H_WHITE}, {"unknown", H_GREY}}) 
     elseif (white.curr > 16) then
         DrawText(lineNum, {{"White: ", H_WHITE}, 
                 {"[".. (white.curr - 16).. "/44] ", H_RED},
-                {"up in ".. (66 - white.curr).. "t", H_GREY}}) 
+                {"up in ".. (60 - white.curr).. "t", H_GREY}}) 
     else
         DrawText(lineNum, {{"White: ", H_WHITE}, 
                 {"[".. white.curr.. "/16] ", H_GREEN},
@@ -1456,7 +1456,7 @@ function DrawMoonText()
     elseif (grey.curr > 8) then
         DrawText(lineNum, {{"Grey:  ", H_GREY}, 
                 {"[".. (grey.curr - 8).. "/20] ", H_RED},
-                {"up in ".. (31 - grey.curr).. "t", H_GREY}}) 
+                {"up in ".. (28 - grey.curr).. "t", H_GREY}}) 
     else
         DrawText(lineNum, {{"Grey:  ", H_GREY}, 
                 {"[".. grey.curr.. "/8] ", H_GREEN},
@@ -1474,7 +1474,7 @@ function DrawMoonText()
     elseif (black.curr > 13) then
         DrawText(lineNum, {{"Black: ", H_BLUE}, 
                 {"[".. (black.curr - 13).. "/35] ", H_RED},
-                {"up in ".. (51 - black.curr).. "t", H_GREY}}) 
+                {"up in ".. (48 - black.curr).. "t", H_GREY}}) 
     else
         DrawText(lineNum, {{"Black: ", H_BLUE}, 
                 {"[".. black.curr.. "/13] ", H_GREEN},
