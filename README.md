@@ -18,6 +18,6 @@ Note: You can also use "3moons" or "moon" for the channels, help, miniwin and mo
 
 ## To install
 1. Download the raw file from github:
-https://raw.github.com/galaban/moons/master/Galabans_Moons.xml
+https://raw.githubusercontent.com/aardSzz/moons/master/Galabans_Moons.xml
 2. Place the raw file into your "plugins" directory.  This is found in your Mushclient folder under /worlds/plugins.
 3. Install the plugain in MushClient.  From the "File" menu, choose "plugins", then "Add".  Select the file and choose "OK".
