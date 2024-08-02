@@ -645,17 +645,17 @@ function threeMoons(rName, rLine, rWildcards)
 		outputlevel = 2
 	end
 
-	if (white.curr == nil) then
+		if (white.curr == nil) then
         if (outputlevel == 4) then
             OutputNote("White moon is in an unknown state")
         end
 	else
 		debugOutput = debugOutput..c_white.."White:   "..c_grey..white.curr.."              "
-		if (white.curr > 17) then
-			nextcalc = 66 - white.curr
+		if (white.curr > 16) then
+			nextcalc = 60 - white.curr
 			nextmoons = nextmoons..c_white.."White:   "..c_grey.."[in "..nextcalc.." ticks]   "
 		else
-			nextcalc = 18 - white.curr
+			nextcalc = 17 - white.curr
 			nextmoons = nextmoons..c_white.."White:   "..c_green.."Now "..c_grey.."("..nextcalc.." ticks left)   "
 		end
 	end	
@@ -666,7 +666,7 @@ function threeMoons(rName, rLine, rWildcards)
 	else
 		debugOutput = debugOutput..c_blue.."Black:   "..c_grey..black.curr.."            "
 		if (black.curr > 13) then
-			nextcalc = 51 - black.curr;
+			nextcalc = 48 - black.curr;
 			nextmoons = nextmoons..c_blue.."Black: "..c_grey.."[in "..nextcalc.." ticks]   "
 		else
 			nextcalc = 14 - black.curr;
@@ -680,7 +680,7 @@ function threeMoons(rName, rLine, rWildcards)
 	else
 		debugOutput = debugOutput..c_dcyan.."Grey:   "..c_grey..grey.curr.."     "
 		if (grey.curr > 8) then
-			nextcalc = 31 - grey.curr
+			nextcalc = 28 - grey.curr
 			nextmoons = nextmoons..c_dcyan.."Grey: "..c_grey.." [in "..nextcalc.." ticks]"
 		else
 			nextcalc = 9 - grey.curr
