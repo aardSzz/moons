@@ -10,14 +10,14 @@
 <muclient>
 <plugin
    name="Galabans_Moons"
-   author="Galaban"
-   id="2e1f6126c7419c94e739611d"
+   author="Galaban+Szzilleriel"
+   id="2e1f6126c7419c94e739611e"
    language="Lua"
    purpose="A basic moon monitoring plugin"
    save_state="y"
    date_written="2015-06-11 12:21:04"
    requires="4.81"
-   version="1.1"
+   version="1.2"
    >
 <description trim="y">
 <![CDATA[
